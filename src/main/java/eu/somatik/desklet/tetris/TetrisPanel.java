@@ -12,6 +12,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 
 
 /**
@@ -118,7 +119,12 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
             }
             
             renderAll(doubleBufferGraphics);
-            this.repaint();
+            SwingUtilities.invokeLater(new Runnable(){
+                public void run() {
+                    repaint();
+                }
+            });
+            
             
             //timing for paint
             if ((sl = 30l - (System.currentTimeMillis() - sa)) < 10l)
@@ -241,6 +247,10 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
             g.drawString("GAME OVER",12*BLOCK_WIDTH,11*BLOCK_WIDTH);
             g.drawString("Press n",12*BLOCK_WIDTH,15*BLOCK_WIDTH);
             g.drawString("for new game.",12*BLOCK_WIDTH,16*BLOCK_WIDTH);
+            g.setColor(Color.LIGHT_GRAY);
+            g.drawString("Keys:",12*BLOCK_WIDTH,19*BLOCK_WIDTH);
+            g.drawString(" Up, down, left",12*BLOCK_WIDTH,20*BLOCK_WIDTH);
+            g.drawString(" Space for drop",12*BLOCK_WIDTH,21*BLOCK_WIDTH);
         }
     }
     
@@ -357,9 +367,11 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
         }
         
         //check veld
-        if(!blocked)
-            if (checkOverlap(0,1))
+        if(!blocked){
+            if (checkOverlap(0,1)){
                 blocked=true;
+            }
+        }
         
         int curX, curY;
         

@@ -30,6 +30,7 @@ public class TetrisDesklet extends AbstractDesklet{
     }
 
     public void init(DeskletContext context) throws Exception {
+        this.context = context;
         tetrisPanel = new TetrisPanel();
         context.getContainer().setContent(tetrisPanel);
         context.getContainer().setResizable(false);
@@ -42,6 +43,7 @@ public class TetrisDesklet extends AbstractDesklet{
 
     public void stop() throws Exception {
         tetrisPanel.stop();
+        this.context.notifyStopped();
     }
 
     public void destroy() throws Exception {
