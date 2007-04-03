@@ -71,6 +71,7 @@ is divided into following sections:
         </condition>
         <condition property="have.sources">
             <or>
+                <available file="${src.resources.dir}"/>
                 <available file="${src.java.dir}"/>
             </or>
         </condition>
@@ -100,6 +101,7 @@ is divided into following sections:
         <!-- You can override this target in the ../build.xml file. -->
     </target>
     <target name="-init-check" depends="-pre-init,-init-private,-init-user,-init-project,-do-init">
+        <fail unless="src.resources.dir">Must set src.resources.dir</fail>
         <fail unless="src.java.dir">Must set src.java.dir</fail>
         <fail unless="test.java.dir">Must set test.java.dir</fail>
         <fail unless="test.src.dir">Must set test.src.dir</fail>
@@ -123,7 +125,7 @@ is divided into following sections:
     </target>
     <target name="-init-macrodef-javac">
         <macrodef name="javac" uri="http://www.netbeans.org/ns/j2se-project/3">
-            <attribute name="srcdir" default="${src.java.dir}"/>
+            <attribute name="srcdir" default="${src.resources.dir}:${src.java.dir}"/>
             <attribute name="destdir" default="${build.classes.dir}"/>
             <attribute name="classpath" default="${javac.classpath}"/>
             <attribute name="debug" default="${javac.debug}"/>
@@ -258,6 +260,7 @@ is divided into following sections:
     <target name="-do-compile" depends="init,deps-jar,-pre-pre-compile,-pre-compile" if="have.sources">
         <j2seproject3:javac/>
         <copy todir="${build.classes.dir}">
+            <fileset dir="${src.resources.dir}" excludes="${build.classes.excludes}"/>
             <fileset dir="${src.java.dir}" excludes="${build.classes.excludes}"/>
         </copy>
     </target>
@@ -408,9 +411,12 @@ is divided into following sections:
                 <path path="${javac.classpath}"/>
             </classpath>
             <sourcepath>
+                <pathelement location="${src.resources.dir}"/>
                 <pathelement location="${src.java.dir}"/>
             </sourcepath>
+            <packageset dir="${src.resources.dir}" includes="*/**"/>
             <packageset dir="${src.java.dir}" includes="*/**"/>
+            <fileset dir="${src.resources.dir}" includes="*.java"/>
             <fileset dir="${src.java.dir}" includes="*.java"/>
         </javadoc>
     </target>

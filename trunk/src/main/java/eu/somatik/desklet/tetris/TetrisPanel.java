@@ -44,7 +44,7 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
     private Block                               nextBlock;
     
     private boolean                             paused=false;
-    private boolean                             gameover=false;
+    private boolean                             gameover=true;
     private int                                 userId=0;
     private long                                downTime = System.currentTimeMillis(); //timer for blockfall
     private boolean                             leftdown=false;
@@ -54,16 +54,19 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
     private boolean                             updown=false;
     private long                                keyTimer=System.currentTimeMillis();
     
-    
-    private Thread thread = null;
+    private volatile boolean running;
     
     /**
      *
      */
     public TetrisPanel(){
-        
+        running = false;
         this.logic = new TetrisLogic();
         this.gameField = new Field();
+        
+        newGame();
+        gameover = true;
+        
         
         doubleBufferImage=new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
         doubleBufferGraphics=(Graphics2D)doubleBufferImage.getGraphics();
@@ -81,13 +84,26 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
         this.setPreferredSize(new Dimension(WIDTH,HEIGHT));
     }
     
+        
+    private void newGame(){
+        logic.reset();
+        curBlock = new Block();
+        curBlock.setPosition(new Point(3,0));
+        nextBlock = new Block();
+        gameField.reset();
+        gameover=false;
+        paused=false;
+        this.requestFocus();
+        downTime = System.currentTimeMillis();
+    }
+    
     public void run() {
         
         //init render
-        myInit();
+
         long pauseTime;
         int delay;
-        while (thread != null) {
+        while (running) {
             long sl, sa = System.currentTimeMillis();
             
             checkKeys();
@@ -155,23 +171,9 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
         }
         
     }
+
     
-    private void newGame(){
-        logic.reset();
-        curBlock = new Block();
-        curBlock.setPosition(new Point(3,0));
-        nextBlock = new Block();
-        gameField.reset();
-        gameover=false;
-        paused=false;
-        this.requestFocus();
-        downTime = System.currentTimeMillis();
-    }
-    
-    
-    void myInit() {
-        newGame();
-    }
+ 
     
     private void clearField(Graphics g){
         g.setColor(COLOR_BACKGROUND);
@@ -237,7 +239,8 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
         if(gameover){
             g.setColor(Color.RED);
             g.drawString("GAME OVER",12*BLOCK_WIDTH,11*BLOCK_WIDTH);
-            g.drawString("Try again? (press y)",12*BLOCK_WIDTH,15*BLOCK_WIDTH);
+            g.drawString("Press n",12*BLOCK_WIDTH,15*BLOCK_WIDTH);
+            g.drawString("for new game.",12*BLOCK_WIDTH,16*BLOCK_WIDTH);
         }
     }
     
@@ -246,6 +249,7 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
     private void renderAll(Graphics g){
         clearField(g);
         renderField(g);
+        renderNextBlock(g);
         renderCurentBlock(g);
         renderInfo(g, logic);
     }
@@ -254,16 +258,15 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
      * Starts the game thread
      */
     public void start() {
-        thread = new Thread(this);
-        thread.start();
+        running = true;
+        new Thread(this).start();;
     }
     
     /**
      * Stops the game thread
      */
     public void stop() {
-        // causes the thread to stop on the next loop
-        thread = null;
+        running = false;
     }
     
     @Override
@@ -422,7 +425,7 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
         case KeyEvent.VK_P:
             paused = !paused;
             break;
-        case KeyEvent.VK_Y:
+        case KeyEvent.VK_N:
             if (gameover){
                 newGame();
             }

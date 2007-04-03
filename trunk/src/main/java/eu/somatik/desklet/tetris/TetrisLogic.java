@@ -22,12 +22,11 @@ public class TetrisLogic {
     private int level;
     private int lines;
     
-    /** Creates a new instance of TetrisLogic */
+    /** 
+     * Creates a new instance of TetrisLogic 
+     */
     public TetrisLogic() {
         reset();
-        
-        
-        // Tools.submitScore(userId, score);
     }
     
     /**
