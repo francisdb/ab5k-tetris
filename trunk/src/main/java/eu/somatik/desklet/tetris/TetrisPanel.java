@@ -2,13 +2,16 @@ package eu.somatik.desklet.tetris;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Point;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 import javax.swing.JPanel;
@@ -19,26 +22,26 @@ import javax.swing.SwingUtilities;
  *
  * @author francisdb
  */
-public class TetrisPanel extends JPanel implements Runnable, KeyListener {
+public class TetrisPanel extends JPanel implements Runnable {
     
     private static final int WIDTH = 350;
     private static final int HEIGHT = 450;
-  
+    
     private static final int BLOCK_HEIGHT = 20;
     private static final int BLOCK_WIDTH = 20;
     
-
+    
     private static final Color COLOR_BACKGROUND = Color.WHITE;
-
+    
     private static final int keyInterval=100;
-
+    
     
     private Image doubleBufferImage;
     private Graphics2D doubleBufferGraphics;
     
     private Field gameField;
     private TetrisLogic logic;
-
+    
     private Random                      randomizer = new Random();
     
     private Block curBlock;
@@ -68,24 +71,17 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
         newGame();
         gameover = true;
         
-        
         doubleBufferImage=new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
         doubleBufferGraphics=(Graphics2D)doubleBufferImage.getGraphics();
         
-        MouseAdapter mouseAdapter = new MouseAdapter() {
-            @Override
-            public void mousePressed(java.awt.event.MouseEvent e) {
-                //System.out.println("mousePressed");
-                requestFocus();
-            }
-        };
+        this.addKeyListener(new KeyHandler());
         
-        this.addMouseListener(mouseAdapter);
-        this.addKeyListener(this);
         this.setPreferredSize(new Dimension(WIDTH,HEIGHT));
+        this.setSize(new Dimension(WIDTH,HEIGHT));
+        
     }
     
-        
+    
     private void newGame(){
         logic.reset();
         curBlock = new Block();
@@ -101,7 +97,7 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
     public void run() {
         
         //init render
-
+        
         long pauseTime;
         int delay;
         while (running) {
@@ -118,13 +114,16 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
                 }
             }
             
+            // FIXME disable render if not active
+            //if(!paused){
             renderAll(doubleBufferGraphics);
+            
             SwingUtilities.invokeLater(new Runnable(){
                 public void run() {
                     repaint();
                 }
             });
-            
+            //}
             
             //timing for paint
             if ((sl = 30l - (System.currentTimeMillis() - sa)) < 10l)
@@ -177,13 +176,13 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
         }
         
     }
-
     
- 
+    
+    
     
     private void clearField(Graphics g){
         g.setColor(COLOR_BACKGROUND);
-        g.fillRect(0,0, doubleBufferImage.getWidth(null), doubleBufferImage.getHeight(null));
+        g.fillRect(0,0, WIDTH, HEIGHT);
     }
     
     private void renderField(Graphics g){
@@ -232,6 +231,8 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
     
     private void renderInfo(Graphics g, TetrisLogic logic){
         g.setColor(Color.DARK_GRAY);
+        Font font = g.getFont();
+        g.setFont(font.deriveFont(10.0f));
         g.drawString("Level: " + logic.getLevel(),12*BLOCK_WIDTH,7*BLOCK_WIDTH);
         g.drawString("Lines: "+ logic.getLines(),12*BLOCK_WIDTH,8*BLOCK_WIDTH);
         g.drawString("Score: "+ logic.getScore() ,12*BLOCK_WIDTH,9*BLOCK_WIDTH);
@@ -245,16 +246,19 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
         if(gameover){
             g.setColor(Color.RED);
             g.drawString("GAME OVER",12*BLOCK_WIDTH,11*BLOCK_WIDTH);
-            g.drawString("Press n",12*BLOCK_WIDTH,15*BLOCK_WIDTH);
-            g.drawString("for new game.",12*BLOCK_WIDTH,16*BLOCK_WIDTH);
+            g.drawString("Press n",12*BLOCK_WIDTH,13*BLOCK_WIDTH);
+            g.drawString("for new game.",12*BLOCK_WIDTH,14*BLOCK_WIDTH);
+            g.drawString("Click to activate.",12*BLOCK_WIDTH,16*BLOCK_WIDTH);
+            
             g.setColor(Color.LIGHT_GRAY);
-            g.drawString("Keys:",12*BLOCK_WIDTH,19*BLOCK_WIDTH);
-            g.drawString(" Up, down, left",12*BLOCK_WIDTH,20*BLOCK_WIDTH);
-            g.drawString(" Space for drop",12*BLOCK_WIDTH,21*BLOCK_WIDTH);
+            g.drawString("Keys:",12*BLOCK_WIDTH,18*BLOCK_WIDTH);
+            g.drawString(" Up, down, left",12*BLOCK_WIDTH,19*BLOCK_WIDTH);
+            g.drawString(" Space for drop",12*BLOCK_WIDTH,20*BLOCK_WIDTH);
+            g.drawString(" P to pause",12*BLOCK_WIDTH,21*BLOCK_WIDTH);
         }
     }
     
-
+    
     
     private void renderAll(Graphics g){
         clearField(g);
@@ -318,7 +322,7 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
         logic.linesRemoved(linesRemoved);
     }
     
-
+    
     
     /**
      *
@@ -413,53 +417,59 @@ public class TetrisPanel extends JPanel implements Runnable, KeyListener {
         }
     }
     
-    
-    public void keyPressed(java.awt.event.KeyEvent e) {
-        switch(e.getKeyCode()){
-        case KeyEvent.VK_RIGHT:
-            rightdown=true;
-            break;
-        case KeyEvent.VK_LEFT:
-            leftdown=true;
-            break;
-        case KeyEvent.VK_UP:
-            if(!paused&&!gameover){
-                updown=true;
+    private class KeyHandler extends KeyAdapter{
+        
+        @Override
+        public void keyPressed(java.awt.event.KeyEvent e) {
+            switch(e.getKeyCode()){
+            case KeyEvent.VK_RIGHT:
+                rightdown=true;
+                break;
+            case KeyEvent.VK_LEFT:
+                leftdown=true;
+                break;
+            case KeyEvent.VK_UP:
+                if(!paused&&!gameover){
+                    updown=true;
+                }
+                break;
+            case KeyEvent.VK_DOWN:
+                downdown=true;
+                break;
+            case KeyEvent.VK_SPACE:
+                if(!paused&&!gameover)
+                    spaced=true;
+                break;
+            case KeyEvent.VK_P:
+                paused = !paused;
+                break;
+            case KeyEvent.VK_N:
+                if (gameover){
+                    newGame();
+                }
+                break;
             }
-            break;
-        case KeyEvent.VK_DOWN:
-            downdown=true;
-            break;
-        case KeyEvent.VK_SPACE:
-            if(!paused&&!gameover)
-                spaced=true;
-            break;
-        case KeyEvent.VK_P:
-            paused = !paused;
-            break;
-        case KeyEvent.VK_N:
-            if (gameover){
-                newGame();
+            //System.out.println("keyPressed "+e.getKeyCode());
+        }//System.out.println("keyReleased "+e.getKeyCode());
+        
+        @Override
+        public void keyReleased(java.awt.event.KeyEvent e) {
+            //System.out.println("keyReleased "+e.getKeyCode());
+            switch(e.getKeyCode()){
+            case KeyEvent.VK_RIGHT:
+                rightdown=false;
+                break;
+            case KeyEvent.VK_LEFT:
+                leftdown=false;
+                break;
+            case KeyEvent.VK_DOWN:
+                downdown=false;
+                break;
             }
-            break;
-        }
-        //System.out.println("keyPressed "+e.getKeyCode());
-    }//System.out.println("keyReleased "+e.getKeyCode());
-    
-    public void keyReleased(java.awt.event.KeyEvent e) {
-        //System.out.println("keyReleased "+e.getKeyCode());
-        switch(e.getKeyCode()){
-        case KeyEvent.VK_RIGHT:
-            rightdown=false;
-            break;
-        case KeyEvent.VK_LEFT:
-            leftdown=false;
-            break;
-        case KeyEvent.VK_DOWN:
-            downdown=false;
-            break;
         }
     }
+    
+    
     
     public void keyTyped(java.awt.event.KeyEvent e) {
         

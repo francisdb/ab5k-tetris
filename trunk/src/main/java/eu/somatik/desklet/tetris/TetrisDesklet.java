@@ -35,7 +35,8 @@ public class TetrisDesklet extends AbstractDesklet{
         context.getContainer().setBackgroundDraggable(true);
         context.getContainer().setContent(tetrisPanel);
         context.getContainer().setResizable(false);
-        context.getContainer().setVisible(true);       
+        context.getContainer().setShaped(true);    
+        context.getContainer().setVisible(true);
     }
 
     public void start() throws Exception {
