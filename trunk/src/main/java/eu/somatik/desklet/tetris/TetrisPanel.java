@@ -5,13 +5,9 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.Random;
 import javax.swing.JPanel;
@@ -36,7 +32,7 @@ public class TetrisPanel extends JPanel implements Runnable {
     private static final int keyInterval=100;
     
     
-    private Image doubleBufferImage;
+    private BufferedImage doubleBufferImage;
     private Graphics2D doubleBufferGraphics;
     
     private Field gameField;
@@ -71,13 +67,14 @@ public class TetrisPanel extends JPanel implements Runnable {
         newGame();
         gameover = true;
         
-        doubleBufferImage=new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
-        doubleBufferGraphics=(Graphics2D)doubleBufferImage.getGraphics();
+        doubleBufferImage = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        doubleBufferGraphics = doubleBufferImage.createGraphics();
         
         this.addKeyListener(new KeyHandler());
         
         this.setPreferredSize(new Dimension(WIDTH,HEIGHT));
         this.setSize(new Dimension(WIDTH,HEIGHT));
+        this.setOpaque(false);
         
     }
     
@@ -129,8 +126,8 @@ public class TetrisPanel extends JPanel implements Runnable {
             if ((sl = 30l - (System.currentTimeMillis() - sa)) < 10l)
                 sl = 10l;
             try { Thread.sleep(sl); } catch (Exception e) { }
-            if (paused){
-                try { Thread.sleep(100); } catch (Exception e) { }
+            if (paused || gameover){
+                try { Thread.sleep(200); } catch (Exception e) { }
                 //not 100% correct...
                 downTime+=System.currentTimeMillis() - sa;
             }
@@ -182,7 +179,8 @@ public class TetrisPanel extends JPanel implements Runnable {
     
     private void clearField(Graphics g){
         g.setColor(COLOR_BACKGROUND);
-        g.fillRect(0,0, WIDTH, HEIGHT);
+        g.fillRoundRect(0,0, WIDTH, HEIGHT,30,30);
+        //g.drawRoundRect(0,0, WIDTH, HEIGHT,30,30);
     }
     
     private void renderField(Graphics g){
@@ -286,7 +284,7 @@ public class TetrisPanel extends JPanel implements Runnable {
     @Override
     protected void paintComponent(Graphics g) {
         doubleBufferImage.flush();
-        g.drawImage(doubleBufferImage,0,0,this);
+        g.drawImage(doubleBufferImage,0,0,null);
     }
     
     /**
@@ -468,10 +466,5 @@ public class TetrisPanel extends JPanel implements Runnable {
             }
         }
     }
-    
-    
-    
-    public void keyTyped(java.awt.event.KeyEvent e) {
-        
-    }
+
 }
