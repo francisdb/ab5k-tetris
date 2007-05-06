@@ -241,13 +241,16 @@ public class TetrisPanel extends JPanel implements Runnable {
             g.drawString("PAUSED",12*BLOCK_WIDTH,10*BLOCK_WIDTH);
         }
         
+        if(!this.isFocusOwner()){
+            g.setColor(Color.RED);
+            g.drawString("Click to activate.",12*BLOCK_WIDTH,16*BLOCK_WIDTH);
+        }
+        
         if(gameover){
             g.setColor(Color.RED);
             g.drawString("GAME OVER",12*BLOCK_WIDTH,11*BLOCK_WIDTH);
             g.drawString("Press n",12*BLOCK_WIDTH,13*BLOCK_WIDTH);
             g.drawString("for new game.",12*BLOCK_WIDTH,14*BLOCK_WIDTH);
-            g.drawString("Click to activate.",12*BLOCK_WIDTH,16*BLOCK_WIDTH);
-            
             g.setColor(Color.LIGHT_GRAY);
             g.drawString("Keys:",12*BLOCK_WIDTH,18*BLOCK_WIDTH);
             g.drawString(" Up, down, left",12*BLOCK_WIDTH,19*BLOCK_WIDTH);
