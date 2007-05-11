@@ -9,11 +9,11 @@
 
 package eu.somatik.desklet.tetris;
 
-import ab5k.desklet.Desklet;
-import ab5k.desklet.DeskletContainer;
-import ab5k.desklet.test.DeskletTester;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.SwingUtilities;
+import org.glossitope.desklet.Desklet;
+import org.glossitope.desklet.DeskletContainer;
+import org.glossitope.desklet.test.DeskletTester;
 
 /**
  *
@@ -51,8 +51,10 @@ public class TetrisDesklet extends Desklet{
     
     private void runOnEDT(Runnable runnable){
         if(SwingUtilities.isEventDispatchThread()){
+            System.out.println("ON EDT");
             runnable.run();
         }else{
+            System.out.println("MOVING TO EDT");
             try         {
                 javax.swing.SwingUtilities.invokeAndWait(runnable);
             } catch (InterruptedException ex) {
