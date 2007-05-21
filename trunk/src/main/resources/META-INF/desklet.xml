@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <desklet version="0.1">
-    <name>Tetris</name>
+    <name>Marble Solitaire</name>
     <author>Francis De Brabandere</author>
-    <homepage>http://code.google.com/p/ab5k-tetris/</homepage>
-    <description>Play tetris</description>
-    <class>eu.somatik.desklet.tetris.TetrisDesklet</class>
+    <homepage>http://code.google.com/p/marblesolitaire/</homepage>
+    <description>Marble solitaire is a well-known board game.</description>
+    <class>eu.somatik.glossitope.marblesolitaire.MarbleSolitaireDesklet</class>
 </desklet>
